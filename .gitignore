@@ -1,0 +1,6 @@
+env/
+__pycache__/
+.polyscope.ini
+imgui.ini
+data/ShapeNet55/shapenet_pc
+ckpt/

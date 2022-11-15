@@ -1,7 +1,6 @@
 name: simsiam-pointnet
 
 dataset: 
-  root: C:\\Users\\56950\\Documents\\Datasets\\ShapeNet55\\ShapeNet55
   name: ShapeNet55
   image_size: 32
   num_workers: 4
@@ -45,6 +44,7 @@ logger:
 
 seed: null
 npoints:  1024
+ckpt_dir: ckpt
 
 
 

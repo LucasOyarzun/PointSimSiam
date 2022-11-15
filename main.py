@@ -10,21 +10,19 @@ import polyscope as ps
 
 
 def main(args):
-    
     if args.vis_debug:
         ps.init()
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    train_dataset = ShapeNet55Dataset(config=args, 
-                                        root=args.dataset.root, 
-                                        npoints=1024, split='train', 
-                                        transform=None)
+    train_dataset = ShapeNet55Dataset(config=args,
+                                        npoints=1024,
+                                        split='train')
 
     if args.vis_debug:
         idx = 20
-        pc1 = ps.register_point_cloud("pc1", train_dataset[idx][2])
-        pc2 = ps.register_point_cloud("pc2", train_dataset[idx][3])
-        pc3 = ps.register_point_cloud("pc3", train_dataset[idx][4])
+        pc1 = ps.register_point_cloud("Transform 1", train_dataset[idx][2])
+        pc2 = ps.register_point_cloud("Transform 2", train_dataset[idx][3])
+        pc3 = ps.register_point_cloud("Original", train_dataset[idx][4])
         ps.show()
     
     train_loader = torch.utils.data.DataLoader(train_dataset, shuffle=True, batch_size=args.train.batch_size)
@@ -39,7 +37,7 @@ def main(args):
     
     lr_scheduler = LR_Scheduler(
         optimizer,
-        args.train.warmup_epochs, args.train.warmup_lr*args.train.batch_size/256, 
+        args.train.warmup_epochs, args.train.warmup_lr*args.train.batch_size/256,
         args.train.num_epochs, args.train.base_lr*args.train.batch_size/256, args.train.final_lr*args.train.batch_size/256, 
         len(train_loader),
         constant_predictor_lr=True # see the end of section 4.2 predictor
@@ -76,6 +74,19 @@ def main(args):
 
 if __name__=='__main__':
     args = parse_args()
-
     main(args)
-    
+
+
+# EXperimentos
+
+#Podrimaos usar el mismo protocolo que point mae para los experimentos, quermos solucionar le mismo probblema.
+# Asi como esta la red uno ya podria pasarle shapenet y hacer que se entrene y guardar ese último modelo despues de x epochs.
+# Luego tomaremos otro dataset (Ej modelnet) y lo que haremos es hacer fine tuning. Tomamos la red preentrenada inicialmente,
+# Ahora si le colocamos una cabeza de clasficacion, y entrenamos toda la red para clasifciar modelNEt, se mediran los resultados con modelNet
+
+# Sobre utilizarlo con otro tipo de problemas
+
+# Point MAE hace fine tuning sobre modelnet, sobre scanobject y luego fine tuning para segmentacion de datos 3d(Identificar partes de un objeto)
+# En documento final podemos proponer trabajar simplemente con clasificacion de modelnet y scanobject.
+
+# En la propuesta podemos hablar sobre el trabajo que hacemos comprender simsiam, como inyectarle un modelo de nube de puntos y primer experimento de hacer una corrida de entrenamiento de la red
