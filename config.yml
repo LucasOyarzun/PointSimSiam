@@ -2,9 +2,9 @@ name: simsiam-pointnet
 
 dataset: 
   name: ShapeNet55
-  image_size: 32
-  num_workers: 4
   hole_size: 0.4
+  num_workers: 4
+  image_size: 32
 
 model: 
   name: simsiam
