@@ -49,7 +49,7 @@ class ShapeNet55Dataset(data.Dataset):
         pc = pc[np.random.choice(pc.shape[0], num, replace=False)]
         return pc
 
-    def make_holes_pcd(self, pcd, hole_size=0.1):
+    def make_holes_pcd(self, pcd, num_holes, holes_sizes=0.1):
         """[summary]
 
         Arguments:
@@ -58,16 +58,18 @@ class ShapeNet55Dataset(data.Dataset):
         Returns:
             [float[m,3]] -- [point cloud data in x, y, z of m size format (m < n)]
         """
-        rand_point = pcd[randint(0, pcd.shape[0])]
+        new_pcd = pcd
+        for i in range(num_holes):
+            rand_point = new_pcd[randint(0, new_pcd.shape[0])]
 
-        partial_pcd = []
+            partial_pcd = []
 
-        for i in range(pcd.shape[0]):
-            dist = np.linalg.norm(rand_point - pcd[i])
-            if dist >= hole_size:
-                # pcd.vertices[i] = rand_point
-                partial_pcd = partial_pcd + [pcd[i]]
-        return np.array([np.array(e) for e in partial_pcd])
+            for i in range(new_pcd.shape[0]):
+                dist = np.linalg.norm(rand_point - new_pcd[i])
+                if dist >= holes_sizes:
+                    partial_pcd = partial_pcd + [new_pcd[i]]
+            new_pcd = np.array([np.array(e) for e in partial_pcd])
+        return new_pcd
 
     def resample_pcd(self, pcd, n):
         """Drop or duplicate points so that pcd has exactly n points"""
@@ -89,13 +91,22 @@ class ShapeNet55Dataset(data.Dataset):
         data = self.pc_norm(data)
 
         data1 = self.resample_pcd(
-            self.make_holes_pcd(data, hole_size=self.config.dataset.hole_size),
+            self.make_holes_pcd(
+                data,
+                num_holes=self.config.dataset.num_holes,
+                holes_sizes=self.config.dataset.holes_sizes,
+            ),
             self.sample_points_num,
         )
         data2 = self.resample_pcd(
-            self.make_holes_pcd(data, hole_size=self.config.dataset.hole_size),
+            self.make_holes_pcd(
+                data,
+                num_holes=self.config.dataset.num_holes,
+                holes_sizes=self.config.dataset.holes_sizes,
+            ),
             self.sample_points_num,
         )
+        print(data1.shape, data2.shape, data.shape)
 
         data1 = torch.from_numpy(data1).float()
         data2 = torch.from_numpy(data2).float()
