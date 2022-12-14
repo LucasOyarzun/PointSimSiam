@@ -46,15 +46,17 @@ def farthest_point_sample(point, npoint):
 
 
 class ModelNetDataset(Dataset):
-    def __init__(self, config):
-        self.root = config.DATA_PATH
-        self.npoints = config.N_POINTS
-        self.use_normals = config.USE_NORMALS
-        self.num_category = config.NUM_CATEGORY
+    def __init__(self, config, npoints, split):
+        self.root = os.path.join(
+            os.path.abspath(os.getcwd()),
+            "data\\ModelNet\\modelnet40_normal_resampled",
+        )
+        self.npoints = npoints
+        self.use_normals = False
+        self.num_category = 40
         self.process_data = True
         self.uniform = True
-        split = config.subset
-        self.subset = config.subset
+        self.subset = split
 
         if self.num_category == 10:
             self.catfile = os.path.join(self.root, "modelnet10_shape_names.txt")

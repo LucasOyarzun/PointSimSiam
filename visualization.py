@@ -1,8 +1,6 @@
-import h5py
 import polyscope as ps
-import numpy as np
-import os, random, json, sys
-from datasets import ShapeNet55Dataset, ScanObjectNNDataset
+import random, json
+from datasets import ShapeNet55Dataset, ScanObjectNNDataset, ModelNetDataset
 from arguments import parse_args
 
 
@@ -30,6 +28,18 @@ def visualize_point_cloud(args):
         # Print the class of the cloud
         point_class = dataset[idx][2][1]
         with open("data\\ScanObjectNN\\scanobjectnn_classes.json") as json_file:
+            ScanObjectNN_classes = json.load(json_file)["classes"]
+            ps.info(f"Class: {ScanObjectNN_classes[point_class]}")
+
+    if args.visualization == "modelnet":
+        dataset = ModelNetDataset(config=args, npoints=8192, split="train")
+        idx = random.randint(0, len(dataset))
+        ps.register_point_cloud("Point Cloud", dataset[idx][2][0])
+        # Print the class of the cloud
+        point_class = dataset[idx][2][1]
+        with open(
+            "data\\ModelNet\\modelnet40_normal_resampled\\modelnet40_classes.json"
+        ) as json_file:
             ScanObjectNN_classes = json.load(json_file)["classes"]
             ps.info(f"Class: {ScanObjectNN_classes[point_class]}")
 
