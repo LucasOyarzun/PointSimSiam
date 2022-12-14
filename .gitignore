@@ -1,5 +1,5 @@
 env/
-__pycache__/
+**/__pycache__/
 .polyscope.ini
 imgui.ini
 ckpt/
@@ -9,3 +9,7 @@ data/ShapeNet55-34/shapenet_pc
 data/ModelNet/modelnet40_normal_resampled/modelnet40_test_8192pts_fps.dat
 data/ModelNet/modelnet40_normal_resampled/modelnet40_train_8192pts_fps.dat
 data/ShapeNetPart
+!data/ShapeNetPart/synsetoffset2category.txt
+data/ScanObjectNN
+!data/ScanObjectNN/ScanObjectNN_shape_names.txt
+data/ModelNetFewShot
