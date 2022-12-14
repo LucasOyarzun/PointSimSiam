@@ -2,9 +2,13 @@ import os
 import numpy as np
 import warnings
 import pickle
-import torch
 from torch.utils.data import Dataset
+import torch
 
+
+"""
+WORK IN PROGRESS
+"""
 
 warnings.filterwarnings("ignore")
 
@@ -17,7 +21,7 @@ def pc_normalize(pc):
     return pc
 
 
-class ModelNetFewShot(Dataset):
+class ModelNetDatasetFewShot(Dataset):
     def __init__(self, config):
         self.root = config.DATA_PATH
         self.npoints = config.N_POINTS

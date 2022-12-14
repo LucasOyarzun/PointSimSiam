@@ -1,27 +1,15 @@
 import torch
-from datasets import ShapeNet55Dataset
+import random
 import os
 from models import get_model
 from optimizers import get_optimizer, LR_Scheduler
-
+from datasets import ShapeNet55Dataset
 from arguments import parse_args
-
-import polyscope as ps
 
 
 def main(args):
-    if args.vis_debug:
-        ps.init()
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     train_dataset = ShapeNet55Dataset(config=args, npoints=1024, split="train")
-
-    if args.vis_debug:
-        idx = 17
-        pc1 = ps.register_point_cloud("Transform 1", train_dataset[idx][2])
-        pc2 = ps.register_point_cloud("Transform 2", train_dataset[idx][3])
-        pc3 = ps.register_point_cloud("Original", train_dataset[idx][4])
-        ps.show()
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset, shuffle=True, batch_size=args.train.batch_size

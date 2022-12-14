@@ -1,4 +1,4 @@
-import datasets.ShapeNet55Dataset
-import datasets.ModelNetDataset
-import datasets.ModelNetDatasetFewShot
-import datasets.ScanObjectNNDataset
+from datasets.ShapeNet55Dataset import ShapeNet55Dataset
+from datasets.ModelNetDataset import ModelNetDataset
+from datasets.ModelNetDatasetFewShot import ModelNetDatasetFewShot
+from datasets.ScanObjectNNDataset import ScanObjectNNDataset

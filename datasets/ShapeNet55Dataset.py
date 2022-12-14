@@ -46,8 +46,7 @@ class ShapeNet55Dataset(data.Dataset):
         return pc
 
     def random_sample(self, pc, num):
-        np.random.shuffle(self.permutation)
-        pc = pc[self.permutation[:num]]
+        pc = pc[np.random.choice(pc.shape[0], num, replace=False)]
         return pc
 
     def make_holes_pcd(self, pcd, hole_size=0.1):
