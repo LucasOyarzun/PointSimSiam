@@ -71,6 +71,18 @@ class ShapeNet55Dataset(data.Dataset):
             new_pcd = np.array([np.array(e) for e in partial_pcd])
         return new_pcd
 
+    def add_noise_pcd(self, pcd, noise_size=0.1):
+        """[summary]
+
+        Arguments:
+            pcd {[float[n,3]]} -- [point cloud data of n size in x, y, z format]
+
+        Returns:
+            [float[n,3]] -- [point cloud data in x, y, z of n size format]
+        """
+        noise = np.random.normal(0, noise_size, pcd.shape)
+        return pcd + noise
+
     def resample_pcd(self, pcd, n):
         """Drop or duplicate points so that pcd has exactly n points"""
         idx = np.random.permutation(pcd.shape[0])
@@ -91,22 +103,31 @@ class ShapeNet55Dataset(data.Dataset):
         data = self.pc_norm(data)
 
         data1 = self.resample_pcd(
-            self.make_holes_pcd(
+            self.add_noise_pcd(
                 data,
-                num_holes=self.config.dataset.num_holes,
-                holes_sizes=self.config.dataset.holes_sizes,
+                noise_size=0.05,
             ),
             self.sample_points_num,
+            # self.make_holes_pcd(
+            #     data,
+            #     num_holes=self.config.dataset.num_holes,
+            #     holes_sizes=self.config.dataset.holes_sizes,
+            # ),
+            # self.sample_points_num,
         )
         data2 = self.resample_pcd(
-            self.make_holes_pcd(
+            self.add_noise_pcd(
                 data,
-                num_holes=self.config.dataset.num_holes,
-                holes_sizes=self.config.dataset.holes_sizes,
+                noise_size=0.05,
             ),
             self.sample_points_num,
+            # self.make_holes_pcd(
+            #     data,
+            #     num_holes=self.config.dataset.num_holes,
+            #     holes_sizes=self.config.dataset.holes_sizes,
+            # ),
+            # self.sample_points_num,
         )
-        print(data1.shape, data2.shape, data.shape)
 
         data1 = torch.from_numpy(data1).float()
         data2 = torch.from_numpy(data2).float()
