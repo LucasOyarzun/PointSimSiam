@@ -21,8 +21,10 @@ class Namespace(object):
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    # Add arguments here
     parser.add_argument("--config", type=str, default="config.yml", help="")
     parser.add_argument("--visualization", type=str, default="shapenet", help="")
+    
     args = parser.parse_args()
 
     with open(args.config, "r") as f:

@@ -49,42 +49,46 @@ class ShapeNet55Dataset(data.Dataset):
         pc = pc[np.random.choice(pc.shape[0], num, replace=False)]
         return pc
 
-    def make_holes_pcd(self, pcd, num_holes, holes_sizes=0.1):
-        """[summary]
+    def make_holes_pcd(self, pcd, num_holes, augmentation_size=0.1):
+        """
+        Makes holes in the point cloud data
 
-        Arguments:
-            pcd {[float[n,3]]} -- [point cloud data of n size in x, y, z format]
+        Parameters
+        ----------
+        pcd : float[n,3]
+            point cloud data of n size in x, y, z format
+        num_holes : int
+            number of holes to make
+        augmentation_size : float
+            size of the holes normalized, by default 0.1
 
-        Returns:
-            [float[m,3]] -- [point cloud data in x, y, z of m size format (m < n)]
+        Returns
+        -------
+        float[n,3]
+            point cloud data in x, y, z of n size format
         """
         new_pcd = pcd
         for i in range(num_holes):
-            rand_point = new_pcd[randint(0, new_pcd.shape[0])]
-
+            rand_point = new_pcd[randint(0, new_pcd.shape[0])] # Pick a random hole center
             partial_pcd = []
-
-            for i in range(new_pcd.shape[0]):
+            for i in range(new_pcd.shape[0]): # Check if the point is in the hole
                 dist = np.linalg.norm(rand_point - new_pcd[i])
-                if dist >= holes_sizes:
+                if dist >= augmentation_size: # If not, add it to the partial point cloud
                     partial_pcd = partial_pcd + [new_pcd[i]]
             new_pcd = np.array([np.array(e) for e in partial_pcd])
         return new_pcd
 
-    def add_noise_pcd(self, pcd, noise_size=0.1):
-        """[summary]
-
-        Arguments:
-            pcd {[float[n,3]]} -- [point cloud data of n size in x, y, z format]
-
-        Returns:
-            [float[n,3]] -- [point cloud data in x, y, z of n size format]
+    def add_noise_pcd(self, pcd, augmentation_size=0.1):
         """
-        noise = np.random.normal(0, noise_size, pcd.shape)
+        Adds noise to the point cloud data
+        """
+        noise = np.random.normal(0, augmentation_size, pcd.shape)
         return pcd + noise
 
     def resample_pcd(self, pcd, n):
-        """Drop or duplicate points so that pcd has exactly n points"""
+        """
+        Drop or duplicate points so that pcd has exactly n points
+        """
         idx = np.random.permutation(pcd.shape[0])
         if idx.shape[0] < n:
             idx = np.concatenate(
@@ -102,32 +106,26 @@ class ShapeNet55Dataset(data.Dataset):
         data = self.random_sample(data, self.sample_points_num)
         data = self.pc_norm(data)
 
-        data1 = self.resample_pcd(
-            self.add_noise_pcd(
+        if self.config.dataset.augmentation == "holes":
+            data1 = self.make_holes_pcd(
                 data,
-                noise_size=0.05,
-            ),
-            self.sample_points_num,
-            # self.make_holes_pcd(
-            #     data,
-            #     num_holes=self.config.dataset.num_holes,
-            #     holes_sizes=self.config.dataset.holes_sizes,
-            # ),
-            # self.sample_points_num,
-        )
-        data2 = self.resample_pcd(
-            self.add_noise_pcd(
+                num_holes=self.config.dataset.num_holes,
+                augmentation_size=self.config.dataset.holes_sizes,
+            )
+            data2 = self.make_holes_pcd(
                 data,
-                noise_size=0.05,
-            ),
-            self.sample_points_num,
-            # self.make_holes_pcd(
-            #     data,
-            #     num_holes=self.config.dataset.num_holes,
-            #     holes_sizes=self.config.dataset.holes_sizes,
-            # ),
-            # self.sample_points_num,
-        )
+                num_holes=self.config.dataset.num_holes,
+                augmentation_size=self.config.dataset.holes_sizes,
+            )
+        elif self.config.dataset.augmentation == "noise":
+            data1 = self.add_noise_pcd(
+                data,
+                augmentation_size=self.config.dataset.noise_size,
+            )
+            data2 = self.add_noise_pcd(
+                data,
+                augmentation_size=self.config.dataset.noise_size,
+            )
 
         data1 = torch.from_numpy(data1).float()
         data2 = torch.from_numpy(data2).float()

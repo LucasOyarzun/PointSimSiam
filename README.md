@@ -39,7 +39,7 @@ We use ShapeNet, ScanObjectNN, ModelNet40 and ShapeNetPart in this work. See [DA
 
 ## Acknowledgements
 
-Our codes are built upon [Point-BERT](https://github.com/lulutang0608/Point-BERT), [Pointnet2_PyTorch](https://github.com/erikwijmans/Pointnet2_PyTorch), [Pointnet_Pointnet2_pytorch](https://github.com/yanx27/Pointnet_Pointnet2_pytorch), [Point-MAE](https://github.com/Pang-Yatian/Point-MAE) and [Simsiam-pytorch](https://github.com/PatrickHua/SimSiam)
+Our codes are built upon [Point-BERT](https://github.com/lulutang0608/Point-BERT), [Point-MAE](https://github.com/Pang-Yatian/Point-MAE) and [Simsiam-pytorch](https://github.com/PatrickHua/SimSiam)
 
 
 ## Reference

@@ -2,7 +2,8 @@ name: simsiam-pointnet
 
 dataset: 
   name: ShapeNet55
-  holes_sizes: 0.2
+  augmentation: "holes" # "holes" | "noise"
+  augmentation_size: 0.1 # 0.05 for noise, 0.1 for holes
   num_holes: 6
   num_workers: 4
   image_size: 32
