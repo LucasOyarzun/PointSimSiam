@@ -13,7 +13,6 @@ class Namespace(object):
                 self.__dict__[key] = value
 
     def __getattr__(self, attribute):
-
         raise AttributeError(
             f"Can not find {attribute} in namespace. Please write {attribute} in your config file(xxx.yaml)!"
         )
@@ -23,8 +22,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     # Add arguments here
     parser.add_argument("--config", type=str, default="config.yml", help="")
-    parser.add_argument("--visualization", type=str, default="shapenet", help="")
-    
+
     args = parser.parse_args()
 
     with open(args.config, "r") as f:
