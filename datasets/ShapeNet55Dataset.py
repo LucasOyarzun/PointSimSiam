@@ -69,11 +69,15 @@ class ShapeNet55Dataset(data.Dataset):
         """
         new_pcd = pcd
         for i in range(num_holes):
-            rand_point = new_pcd[randint(0, new_pcd.shape[0])] # Pick a random hole center
+            rand_point = new_pcd[
+                randint(0, new_pcd.shape[0])
+            ]  # Pick a random hole center
             partial_pcd = []
-            for i in range(new_pcd.shape[0]): # Check if the point is in the hole
+            for i in range(new_pcd.shape[0]):  # Check if the point is in the hole
                 dist = np.linalg.norm(rand_point - new_pcd[i])
-                if dist >= augmentation_size: # If not, add it to the partial point cloud
+                if (
+                    dist >= augmentation_size
+                ):  # If not, add it to the partial point cloud
                     partial_pcd = partial_pcd + [new_pcd[i]]
             new_pcd = np.array([np.array(e) for e in partial_pcd])
         return new_pcd
@@ -107,24 +111,36 @@ class ShapeNet55Dataset(data.Dataset):
         data = self.pc_norm(data)
 
         if self.config.dataset.augmentation == "holes":
-            data1 = self.make_holes_pcd(
-                data,
-                num_holes=self.config.dataset.num_holes,
-                augmentation_size=self.config.dataset.holes_sizes,
+            data1 = self.resample_pcd(
+                self.make_holes_pcd(
+                    data,
+                    num_holes=self.config.dataset.num_holes,
+                    augmentation_size=self.config.dataset.augmentation_size,
+                ),
+                self.sample_points_num,
             )
-            data2 = self.make_holes_pcd(
-                data,
-                num_holes=self.config.dataset.num_holes,
-                augmentation_size=self.config.dataset.holes_sizes,
+            data2 = self.resample_pcd(
+                self.make_holes_pcd(
+                    data,
+                    num_holes=self.config.dataset.num_holes,
+                    augmentation_size=self.config.dataset.augmentation_size,
+                ),
+                self.sample_points_num,
             )
         elif self.config.dataset.augmentation == "noise":
-            data1 = self.add_noise_pcd(
-                data,
-                augmentation_size=self.config.dataset.noise_size,
+            data1 = self.resample_pcd(
+                self.add_noise_pcd(
+                    data,
+                    augmentation_size=self.config.dataset.augmentation_size,
+                ),
+                self.sample_points_num,
             )
-            data2 = self.add_noise_pcd(
-                data,
-                augmentation_size=self.config.dataset.noise_size,
+            data2 = self.resample_pcd(
+                self.add_noise_pcd(
+                    data,
+                    augmentation_size=self.config.dataset.augmentation_size,
+                ),
+                self.sample_points_num,
             )
 
         data1 = torch.from_numpy(data1).float()
