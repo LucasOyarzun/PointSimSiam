@@ -1,8 +1,7 @@
 import torch
-from .lr_scheduler import LR_Scheduler
 
 
-def get_optimizer(name, model, lr, momentum, weight_decay):
+def get_optimizer(model, config):
     predictor_prefix = ("module.predictor", "predictor")
     parameters = [
         {
@@ -12,7 +11,7 @@ def get_optimizer(name, model, lr, momentum, weight_decay):
                 for name, param in model.named_parameters()
                 if not name.startswith(predictor_prefix)
             ],
-            "lr": lr,
+            "lr": config.kwargs.lr,
         },
         {
             "name": "predictor",
@@ -21,14 +20,43 @@ def get_optimizer(name, model, lr, momentum, weight_decay):
                 for name, param in model.named_parameters()
                 if name.startswith(predictor_prefix)
             ],
-            "lr": lr,
+            "lr": config.kwargs.lr,
         },
     ]
 
-    if name == "sgd":
+    if config.name == "SGD":
         optimizer = torch.optim.SGD(
-            parameters, lr=lr, momentum=momentum, weight_decay=weight_decay
+            parameters,
+            **config.kwargs.__dict__,
+            nesterov=True,
         )
+    elif config.name == "Adam":
+        optimizer = torch.optim.Adam(parameters, **config.kwargs.__dict__)
+    elif config.name == "AdamW":
+
+        def add_weight_decay(model, weight_decay=1e-5, skip_list=()):
+            decay = []
+            no_decay = []
+            for name, param in model.module.named_parameters():
+                if not param.requires_grad:
+                    continue  # frozen weights
+                if (
+                    len(param.shape) == 1
+                    or name.endswith(".bias")
+                    or "token" in name
+                    or name in skip_list
+                ):
+                    # print(name)
+                    no_decay.append(param)
+                else:
+                    decay.append(param)
+            return [
+                {"params": no_decay, "weight_decay": 0.0},
+                {"params": decay, "weight_decay": weight_decay},
+            ]
+
+        param_groups = add_weight_decay(model, weight_decay=config.kwargs.weight_decay)
+        optimizer = torch.optim.AdamW(param_groups, **config.kwargs.__dict__)
     else:
         raise NotImplementedError
 

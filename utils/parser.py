@@ -21,7 +21,7 @@ class Namespace(object):
 def parse_args():
     parser = argparse.ArgumentParser()
     # Add arguments here
-    parser.add_argument("--config", type=str, default="config.yml", help="")
+    parser.add_argument("--config", type=str, help="yaml config file", required=True)
 
     args = parser.parse_args()
 

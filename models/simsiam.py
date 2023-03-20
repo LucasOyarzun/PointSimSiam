@@ -85,7 +85,6 @@ class SimSiam(nn.Module):
         self.predictor = prediction_MLP()
 
     def forward(self, x1, x2):
-
         f, h = self.encoder, self.predictor
         z1, z2 = f(x1), f(x2)
         p1, p2 = h(z1), h(z2)

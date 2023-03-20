@@ -11,7 +11,7 @@ def get_backbone(backbone, cut_cl_head=True):
 
 
 def get_model(config):
-    if config.name == "simsiam":
+    if config.NAME == "SimSiam":
         model = SimSiam(get_backbone(config.backbone))
         if config.proj_layers is not None:
             model.projector.set_layers(config.proj_layers)
