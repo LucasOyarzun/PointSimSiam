@@ -1,7 +1,11 @@
 import torch
+from timm.scheduler import CosineLRScheduler
+from utils.misc import *
 
 
-def get_optimizer(model, config):
+def get_optimizer_sche(model, config):
+    optimizer_config = config.optimizer
+
     predictor_prefix = ("module.predictor", "predictor")
     parameters = [
         {
@@ -11,7 +15,7 @@ def get_optimizer(model, config):
                 for name, param in model.named_parameters()
                 if not name.startswith(predictor_prefix)
             ],
-            "lr": config.kwargs.lr,
+            "lr": optimizer_config.kwargs.lr,
         },
         {
             "name": "predictor",
@@ -20,19 +24,19 @@ def get_optimizer(model, config):
                 for name, param in model.named_parameters()
                 if name.startswith(predictor_prefix)
             ],
-            "lr": config.kwargs.lr,
+            "lr": optimizer_config.kwargs.lr,
         },
     ]
 
-    if config.name == "SGD":
+    if optimizer_config.name == "SGD":
         optimizer = torch.optim.SGD(
             parameters,
-            **config.kwargs.__dict__,
+            **optimizer_config.kwargs.__dict__,
             nesterov=True,
         )
-    elif config.name == "Adam":
-        optimizer = torch.optim.Adam(parameters, **config.kwargs.__dict__)
-    elif config.name == "AdamW":
+    elif optimizer_config.name == "Adam":
+        optimizer = torch.optim.Adam(parameters, **optimizer_config.kwargs.__dict__)
+    elif optimizer_config.name == "AdamW":
 
         def add_weight_decay(model, weight_decay=1e-5, skip_list=()):
             decay = []
@@ -55,9 +59,40 @@ def get_optimizer(model, config):
                 {"params": decay, "weight_decay": weight_decay},
             ]
 
-        param_groups = add_weight_decay(model, weight_decay=config.kwargs.weight_decay)
-        optimizer = torch.optim.AdamW(param_groups, **config.kwargs.__dict__)
+        param_groups = add_weight_decay(
+            model, weight_decay=optimizer_config.kwargs.weight_decay
+        )
+        optimizer = torch.optim.AdamW(param_groups, **optimizer_config.kwargs.__dict__)
     else:
         raise NotImplementedError
 
-    return optimizer
+    scheduler_config = config.scheduler
+    if scheduler_config.type == "CosLR":
+        scheduler = CosineLRScheduler(
+            optimizer,
+            t_initial=scheduler_config.kwargs.epochs,
+            lr_min=1e-6,
+            k_decay=0.1,
+            warmup_lr_init=1e-6,
+            warmup_t=scheduler_config.kwargs.initial_epochs,
+            cycle_limit=1,
+            t_in_epochs=True,
+        )
+    elif scheduler_config.type == "StepLR":
+        scheduler = torch.optim.lr_scheduler.StepLR(
+            optimizer, **scheduler_config.kwargs
+        )
+    elif scheduler_config.type == "LambdaLR":
+        scheduler = build_lambda_sche(optimizer, scheduler_config.kwargs)  # misc.py
+    elif scheduler_config.type == "function":
+        scheduler = None
+    else:
+        raise NotImplementedError()
+
+    if hasattr(config, "bnmscheduler"):
+        bnsche_config = config.bnmscheduler
+        if bnsche_config.type == "Lambda":
+            bnscheduler = build_lambda_bnsche(model, bnsche_config.kwargs)  # misc.py
+        scheduler = [scheduler, bnscheduler]
+
+    return optimizer, scheduler

@@ -1,9 +1,8 @@
 import torch
 import os
 from models import get_model
-from optimizers import get_optimizer
+from optimizers import get_optimizer_sche
 from datasets import ShapeNet55Dataset
-from timm.scheduler import CosineLRScheduler
 
 
 def run_net(config):
@@ -15,18 +14,7 @@ def run_net(config):
 
     model = get_model(config=config.model)
 
-    optimizer = get_optimizer(model, config.optimizer)
-
-    scheduler = CosineLRScheduler(
-        optimizer,
-        t_initial=config.scheduler.kwargs.epochs,
-        lr_min=1e-6,
-        k_decay=0.1,
-        warmup_lr_init=1e-6,
-        warmup_t=config.scheduler.kwargs.initial_epochs,
-        cycle_limit=1,
-        t_in_epochs=True,
-    )
+    optimizer, scheduler = get_optimizer_sche(model, config)
 
     for epoch in range(config.epochs):
         model.train()
