@@ -17,12 +17,11 @@ dataset : {
             others: {subset: 'train', npoints: 1024, batch_size: 32},
             augmentation: 'holes',
             num_holes: 5,
-            augmentation_size: 0.1},
-            
-  val : { _base_: cfgs/dataset_configs/ModelNet40.yaml, 
-            others: {subset: 'test'}},
-  extra_train : { _base_: cfgs/dataset_configs/ModelNet40.yaml, 
-            others: {subset: 'train'}}}
+            augmentation_size: 0.1},  
+  val : { _base_: cfgs/dataset_configs/ShapeNet-55.yaml,
+            others: {subset: 'test', npoints: 1024}},
+  test : { _base_: cfgs/dataset_configs/ShapeNet-55.yaml,
+            others: {subset: 'test', npoints: 1024}}}
 model : {
   NAME: SimSiam,
   backbone: PointNetfeat,

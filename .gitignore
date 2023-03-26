@@ -13,3 +13,4 @@ data/ShapeNetPart
 data/ScanObjectNN
 !data/ScanObjectNN/ScanObjectNN_shape_names.txt
 data/ModelNetFewShot
+experiments
