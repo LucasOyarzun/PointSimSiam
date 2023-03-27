@@ -2,6 +2,8 @@ import argparse
 import yaml
 import re
 
+### Arguments and configuration parser
+
 
 class Namespace(object):
     def __init__(self, somedict):
@@ -21,8 +23,8 @@ class Namespace(object):
 def parse_args():
     parser = argparse.ArgumentParser()
     # Add arguments here
-    parser.add_argument("--config", type=str, default="config.yml", help="")
-
+    parser.add_argument("--config", type=str, help="Configuration file, e.g. config/pretrain.yaml")
+    parser.add_argument('--num_workers', type=int, default=8)
     args = parser.parse_args()
 
     with open(args.config, "r") as f:

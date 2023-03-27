@@ -7,21 +7,21 @@ from numpy.random import randint
 
 
 class ShapeNet55Dataset(data.Dataset):
-    def __init__(self, config, npoints, split):
+    def __init__(self, config):
         self.data_root = os.path.join(
             os.path.abspath(os.getcwd()), "data\\ShapeNet55-34\\ShapeNet-55"
         )
         self.pc_path = os.path.join(
             os.path.abspath(os.getcwd()), "data\\ShapeNet55-34\\shapenet_pc"
         )
-        self.subset = split
-        self.npoints = npoints
+        self.subset = config.others.subset
+        self.npoints = config.others.npoints
         self.config = config
 
         self.train_data_list_file = os.path.join(self.data_root, f"{self.subset}.txt")
         self.test_data_list_file = os.path.join(self.data_root, "test.txt")
 
-        self.sample_points_num = config.npoints
+        self.sample_points_num = config.others.npoints
 
         with open(self.train_data_list_file, "r") as f:
             lines = f.readlines()
@@ -52,7 +52,6 @@ class ShapeNet55Dataset(data.Dataset):
     def make_holes_pcd(self, pcd, num_holes, augmentation_size=0.1):
         """
         Makes holes in the point cloud data
-
         Parameters
         ----------
         pcd : float[n,3]
@@ -61,7 +60,6 @@ class ShapeNet55Dataset(data.Dataset):
             number of holes to make
         augmentation_size : float
             size of the holes normalized, by default 0.1
-
         Returns
         -------
         float[n,3]
@@ -110,35 +108,35 @@ class ShapeNet55Dataset(data.Dataset):
         data = self.random_sample(data, self.sample_points_num)
         data = self.pc_norm(data)
 
-        if self.config.dataset.augmentation == "holes":
+        if self.config.augmentation == "holes":
             data1 = self.resample_pcd(
                 self.make_holes_pcd(
                     data,
-                    num_holes=self.config.dataset.num_holes,
-                    augmentation_size=self.config.dataset.augmentation_size,
+                    num_holes=self.config.num_holes,
+                    augmentation_size=self.config.augmentation_size,
                 ),
                 self.sample_points_num,
             )
             data2 = self.resample_pcd(
                 self.make_holes_pcd(
                     data,
-                    num_holes=self.config.dataset.num_holes,
-                    augmentation_size=self.config.dataset.augmentation_size,
+                    num_holes=self.config.num_holes,
+                    augmentation_size=self.config.augmentation_size,
                 ),
                 self.sample_points_num,
             )
-        elif self.config.dataset.augmentation == "noise":
+        elif self.config.augmentation == "noise":
             data1 = self.resample_pcd(
                 self.add_noise_pcd(
                     data,
-                    augmentation_size=self.config.dataset.augmentation_size,
+                    augmentation_size=self.config.augmentation_size,
                 ),
                 self.sample_points_num,
             )
             data2 = self.resample_pcd(
                 self.add_noise_pcd(
                     data,
-                    augmentation_size=self.config.dataset.augmentation_size,
+                    augmentation_size=self.config.augmentation_size,
                 ),
                 self.sample_points_num,
             )
