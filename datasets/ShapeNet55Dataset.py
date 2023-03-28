@@ -8,12 +8,8 @@ from numpy.random import randint
 
 class ShapeNet55Dataset(data.Dataset):
     def __init__(self, config):
-        self.data_root = os.path.join(
-            os.path.abspath(os.getcwd()), "data\\ShapeNet55-34\\ShapeNet-55"
-        )
-        self.pc_path = os.path.join(
-            os.path.abspath(os.getcwd()), "data\\ShapeNet55-34\\shapenet_pc"
-        )
+        self.data_root = config.DATA_PATH
+        self.pc_path = config.PC_PATH
         self.subset = config.others.subset
         self.npoints = config.others.npoints
         self.config = config

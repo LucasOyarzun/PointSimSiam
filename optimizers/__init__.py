@@ -28,15 +28,15 @@ def get_optimizer_sche(model, config):
         },
     ]
 
-    if optimizer_config.name == "SGD":
+    if optimizer_config.type == "SGD":
         optimizer = torch.optim.SGD(
             parameters,
             **optimizer_config.kwargs.__dict__,
             nesterov=True,
         )
-    elif optimizer_config.name == "Adam":
+    elif optimizer_config.type == "Adam":
         optimizer = torch.optim.Adam(parameters, **optimizer_config.kwargs.__dict__)
-    elif optimizer_config.name == "AdamW":
+    elif optimizer_config.type == "AdamW":
 
         def add_weight_decay(model, weight_decay=1e-5, skip_list=()):
             decay = []
@@ -50,7 +50,7 @@ def get_optimizer_sche(model, config):
                     or "token" in name
                     or name in skip_list
                 ):
-                    # print(name)
+
                     no_decay.append(param)
                 else:
                     decay.append(param)

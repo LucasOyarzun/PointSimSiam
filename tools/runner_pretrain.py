@@ -32,7 +32,8 @@ def run_net(config):
             data2 = data2.to(config.device, non_blocking=True)
             data1 = data1.transpose(2, 1).contiguous()
             data2 = data2.transpose(2, 1).contiguous()
-
+            print(data1.shape)
+            print(data2.shape)
             data_dict = model(data1, data2)
             loss = data_dict["loss"].mean()
             loss.backward()
@@ -41,8 +42,9 @@ def run_net(config):
             print(f"{index}/{len(train_loader)} - Loss: {loss.item()}")
 
         # Save checkpoint
-        model_path = os.path.join(config.ckpt_dir, f"{config.name}_{epoch+1}")
+        model_path = os.path.join(config.ckpt_dir, f"{dataset_config.NAME}_{epoch+1}.pth")
         torch.save(
             {"epoch": epoch + 1, "state_dict": model.module.state_dict()}, model_path
         )
+        
         print(f"Model saved to {model_path}")

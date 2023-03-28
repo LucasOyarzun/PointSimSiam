@@ -25,6 +25,7 @@ def parse_args():
     # Add arguments here
     parser.add_argument("--config", type=str, help="Configuration file, e.g. config/pretrain.yaml")
     parser.add_argument('--num_workers', type=int, default=8)
+    parser.add_argument('--finetune', type=bool, default=False, help="If its a finetune run, default=False: pretrain")
     args = parser.parse_args()
 
     with open(args.config, "r") as f:

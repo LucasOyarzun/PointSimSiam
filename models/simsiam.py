@@ -92,6 +92,12 @@ class SimSiam(nn.Module):
         L = D(p1, z2) / 2 + D(p2, z1) / 2
         return {"loss": L}
 
+    def forward_finetune(self, x):
+        f = self.encoder
+        p = self.predictor
+        z = nn.Sequential(f, p)(x)
+        return z
+
 
 if __name__ == "__main__":
     model = SimSiam()

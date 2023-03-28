@@ -2,15 +2,12 @@ import os
 import numpy as np
 import warnings
 import pickle
+
 from tqdm import tqdm
 from torch.utils.data import Dataset
 import torch
 
-"""
-WORK IN PROGRESS
-"""
-
-warnings.filterwarnings("ignore")
+warnings.filterwarnings('ignore')
 
 
 def pc_normalize(pc):
@@ -30,7 +27,7 @@ def farthest_point_sample(point, npoint):
         centroids: sampled pointcloud index, [npoint, D]
     """
     N, D = point.shape
-    xyz = point[:, :3]
+    xyz = point[:,:3]
     centroids = np.zeros((npoint,))
     distance = np.ones((N,)) * 1e10
     farthest = np.random.randint(0, N)
@@ -46,67 +43,42 @@ def farthest_point_sample(point, npoint):
 
 
 class ModelNetDataset(Dataset):
-    def __init__(self, config, npoints, split):
-        self.root = os.path.join(
-            os.path.abspath(os.getcwd()),
-            "data\\ModelNet\\modelnet40_normal_resampled",
-        )
-        self.npoints = npoints
-        self.use_normals = False
-        self.num_category = 40
+    def __init__(self, config):
+        self.root = config.DATA_PATH
+        self.npoints = config.N_POINTS
+        self.use_normals = config.USE_NORMALS
+        self.num_category = config.NUM_CATEGORY
         self.process_data = True
         self.uniform = True
-        self.subset = split
+        split = config.others.subset
+        self.subset = config.others.subset
 
         if self.num_category == 10:
-            self.catfile = os.path.join(self.root, "modelnet10_shape_names.txt")
+            self.catfile = os.path.join(self.root, 'modelnet10_shape_names.txt')
         else:
-            self.catfile = os.path.join(self.root, "modelnet40_shape_names.txt")
+            self.catfile = os.path.join(self.root, 'modelnet40_shape_names.txt')
 
         self.cat = [line.rstrip() for line in open(self.catfile)]
         self.classes = dict(zip(self.cat, range(len(self.cat))))
 
         shape_ids = {}
         if self.num_category == 10:
-            shape_ids["train"] = [
-                line.rstrip()
-                for line in open(os.path.join(self.root, "modelnet10_train.txt"))
-            ]
-            shape_ids["test"] = [
-                line.rstrip()
-                for line in open(os.path.join(self.root, "modelnet10_test.txt"))
-            ]
+            shape_ids['train'] = [line.rstrip() for line in open(
+                os.path.join(self.root, 'modelnet10_train.txt'))]
+            shape_ids['test'] = [line.rstrip() for line in open(os.path.join(self.root, 'modelnet10_test.txt'))]
         else:
-            shape_ids["train"] = [
-                line.rstrip()
-                for line in open(os.path.join(self.root, "modelnet40_train.txt"))
-            ]
-            shape_ids["test"] = [
-                line.rstrip()
-                for line in open(os.path.join(self.root, "modelnet40_test.txt"))
-            ]
+            shape_ids['train'] = [line.rstrip() for line in open(os.path.join(self.root, 'modelnet40_train.txt'))]
+            shape_ids['test'] = [line.rstrip() for line in open(os.path.join(self.root, 'modelnet40_test.txt'))]
 
-        assert split == "train" or split == "test"
-        shape_names = ["_".join(x.split("_")[0:-1]) for x in shape_ids[split]]
-        self.datapath = [
-            (
-                shape_names[i],
-                os.path.join(self.root, shape_names[i], shape_ids[split][i]) + ".txt",
-            )
-            for i in range(len(shape_ids[split]))
-        ]
+        assert (split == 'train' or split == 'test')
+        shape_names = ['_'.join(x.split('_')[0:-1]) for x in shape_ids[split]]
+        self.datapath = [(shape_names[i], os.path.join(self.root, shape_names[i], shape_ids[split][i]) + '.txt') for i
+                         in range(len(shape_ids[split]))]
 
         if self.uniform:
-            self.save_path = os.path.join(
-                self.root,
-                "modelnet%d_%s_%dpts_fps.dat"
-                % (self.num_category, split, self.npoints),
-            )
+            self.save_path = os.path.join(self.root, 'modelnet%d_%s_%dpts_fps.dat' % (self.num_category, split, self.npoints))
         else:
-            self.save_path = os.path.join(
-                self.root,
-                "modelnet%d_%s_%dpts.dat" % (self.num_category, split, self.npoints),
-            )
+            self.save_path = os.path.join(self.root, 'modelnet%d_%s_%dpts.dat' % (self.num_category, split, self.npoints))
 
         if self.process_data:
             if not os.path.exists(self.save_path):
@@ -117,20 +89,20 @@ class ModelNetDataset(Dataset):
                     fn = self.datapath[index]
                     cls = self.classes[self.datapath[index][0]]
                     cls = np.array([cls]).astype(np.int32)
-                    point_set = np.loadtxt(fn[1], delimiter=",").astype(np.float32)
+                    point_set = np.loadtxt(fn[1], delimiter=',').astype(np.float32)
 
                     if self.uniform:
                         point_set = farthest_point_sample(point_set, self.npoints)
                     else:
-                        point_set = point_set[0 : self.npoints, :]
+                        point_set = point_set[0:self.npoints, :]
 
                     self.list_of_points[index] = point_set
                     self.list_of_labels[index] = cls
 
-                with open(self.save_path, "wb") as f:
+                with open(self.save_path, 'wb') as f:
                     pickle.dump([self.list_of_points, self.list_of_labels], f)
             else:
-                with open(self.save_path, "rb") as f:
+                with open(self.save_path, 'rb') as f:
                     self.list_of_points, self.list_of_labels = pickle.load(f)
 
     def __len__(self):
@@ -143,24 +115,24 @@ class ModelNetDataset(Dataset):
             fn = self.datapath[index]
             cls = self.classes[self.datapath[index][0]]
             label = np.array([cls]).astype(np.int32)
-            point_set = np.loadtxt(fn[1], delimiter=",").astype(np.float32)
+            point_set = np.loadtxt(fn[1], delimiter=',').astype(np.float32)
 
             if self.uniform:
                 point_set = farthest_point_sample(point_set, self.npoints)
             else:
-                point_set = point_set[0 : self.npoints, :]
-
+                point_set = point_set[0:self.npoints, :]
         point_set[:, 0:3] = pc_normalize(point_set[:, 0:3])
         if not self.use_normals:
             point_set = point_set[:, 0:3]
 
         return point_set, label[0]
 
+
     def __getitem__(self, index):
         points, label = self._get_item(index)
-        pt_idxs = np.arange(0, points.shape[0])  # 2048
-        if self.subset == "train":
+        pt_idxs = np.arange(0, points.shape[0])   # 2048
+        if self.subset == 'train':
             np.random.shuffle(pt_idxs)
         current_points = points[pt_idxs].copy()
         current_points = torch.from_numpy(current_points).float()
-        return "ModelNet", "sample", (current_points, label)
+        return 'ModelNet', 'sample', (current_points, label)
