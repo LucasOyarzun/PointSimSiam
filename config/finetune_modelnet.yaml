@@ -35,7 +35,7 @@ dataset:
 model: { NAME: SimSiam, backbone: PointNetfeat, proj_layers: 2 }
 
 npoints: 1024
-total_bs: 32
+total_bs: 128
 step_per_update: 1
 max_epoch: 300
 grad_norm_clip: 10

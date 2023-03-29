@@ -17,5 +17,4 @@ def get_model(config):
             model.projector.set_layers(config.proj_layers)
     else:
         raise NotImplementedError
-    model = torch.nn.DataParallel(model)
     return model

@@ -34,6 +34,6 @@ dataset:
   }
 model: { NAME: SimSiam, backbone: PointNetfeat, proj_layers: 2 }
 
-total_bs: 32
+total_bs: 128
 epochs: 100
 ckpt_dir: ckpt

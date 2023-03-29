@@ -5,6 +5,7 @@ from models import get_model
 from optimizers import get_optimizer_sche
 from datasets import ShapeNet55Dataset
 
+
 def run_net(config):
     # Dataset
     dataset_config = config.dataset.train
@@ -15,9 +16,9 @@ def run_net(config):
                                                 num_workers = int(config.num_workers))
 
     # Model
-    model = get_model(config=config.model)
     config.device = torch.device("cuda" if config.use_gpu else "cpu")
-    model = nn.DataParallel(model).cuda()
+    model = get_model(config=config.model).to(config.device)
+    model = torch.nn.DataParallel(model)
 
     # Optimizer and Scheduler
     optimizer, scheduler = get_optimizer_sche(model, config)
@@ -32,8 +33,6 @@ def run_net(config):
             data2 = data2.to(config.device, non_blocking=True)
             data1 = data1.transpose(2, 1).contiguous()
             data2 = data2.transpose(2, 1).contiguous()
-            print(data1.shape)
-            print(data2.shape)
             data_dict = model(data1, data2)
             loss = data_dict["loss"].mean()
             loss.backward()

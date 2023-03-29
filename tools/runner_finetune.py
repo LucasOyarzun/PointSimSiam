@@ -16,7 +16,7 @@ def run_net(config):
                                                 num_workers = int(config.num_workers))
     config.device = torch.device("cuda" if config.use_gpu else "cpu")
     # Model
-    model = get_model(config=config.model)
+    model = get_model(config=config.model).to(config.device)
     # load pretrained weights
     checkpoint_path = os.path.join(config.ckpt_dir, f"ShapeNet_1.pth")
     checkpoint = torch.load(checkpoint_path, map_location=config.device)
@@ -28,7 +28,7 @@ def run_net(config):
     #     model = get_model(config=config.model)
     #     # Cargar los parámetros del modelo
     #     model.load_state_dict(state_dict)
-    model.module.predictor = nn.Sequential(
+    model.predictor = nn.Sequential(
                 nn.Linear(384 * 2, 256), # trans_dim = 384 en point MAE
                 nn.BatchNorm1d(256),
                 nn.ReLU(inplace=True),
@@ -39,7 +39,8 @@ def run_net(config):
                 nn.Dropout(0.5),
                 nn.Linear(256, 40) # cls_dim = 40 en point MAE
             )
-    model.module.forward = model.module.forward_finetune
+    model.forward = model.forward_finetune
+    model = torch.nn.DataParallel(model)
     model.cuda()
 
     # Optimizer and Scheduler
